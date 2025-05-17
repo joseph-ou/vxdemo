@@ -2,6 +2,7 @@
 
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import {getToken} from "@/plugins/cookie";
 // import App from "@/App.vue";
 
 
@@ -20,8 +21,6 @@ const router = new VueRouter({
     routes: [
 
 
-
-
         {
             path: '/login',
             name: "Login",
@@ -34,6 +33,11 @@ const router = new VueRouter({
             /*component: Home*/
             component:()=>import('../views/Layout.vue'),
             children:[
+                {
+                    path:'',
+                    redirect:'task',
+                },
+
                 {
                     path:'task',
                     name:'Task',
@@ -135,10 +139,30 @@ const router = new VueRouter({
         },
 
 
-
-
-
     ]
 })
+
+router.beforeEach((to, from, next) => {
+    let token=getToken();
+
+    //如果已登录则继续访问页面
+    if(token){
+        next();
+        return;
+    }
+
+    //如果未登录 访问登录页面
+    if(to.name==='Login'){
+        next();
+        return;
+    }
+
+    //跳转登录界面
+    next({name: 'Login'});
+
+})
+
+
+
 
 export default router

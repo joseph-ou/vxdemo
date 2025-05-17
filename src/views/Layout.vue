@@ -11,7 +11,13 @@
       //获取当前所有路由
       this.rootActiveRouter = this.$route.matched[1].name
 
-    }
+    },
+
+    computed:{
+      username(){
+        return this.$store.state.username
+      },
+    },
   }
 </script>
 
@@ -27,7 +33,7 @@
 
 
      <el-submenu index="5" style="float: right">
-        <template slot="title" >我的工作台</template>
+        <template slot="title" >{{username}}</template>
       <el-menu-item index="5-1">选项1</el-menu-item>
       <el-menu-item index="5-2">选项2</el-menu-item>
       <el-menu-item index="5-3">选项3</el-menu-item>

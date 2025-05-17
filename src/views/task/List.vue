@@ -31,7 +31,17 @@
 
       }
 
-    }
+    },
+
+
+    created(){
+      this.axios.get("/base/test/").then(res=>{
+        // console.log('success');
+        console.log('success',res.data);
+      }).catch(reason => {
+        console.log('error',reason);
+      })
+    },
 
 
   }

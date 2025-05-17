@@ -10,6 +10,12 @@ export default{
         username:'',
         password:'',
       },
+
+      userinfoError:{
+        username:'',
+        password:'',
+      },
+
       smsinfo:{
         phone:'',
         code:'',
@@ -49,13 +55,47 @@ export default{
 
     /*执行账号表单验证*/
     submitForm(formName) {
+      //清空原来错误
+      this.clearCustomFormError();
+
       this.$refs[formName].validate((valid) => {
-        if (valid) {
-          alert('submit!');
-        } else {
-          console.log('error submit!!');
+
+        if (!valid) {
+          // alert('submit!');
           return false;
+          //向后端api发送请求 then表示发送完
+
         }
+
+        this.axios.post('/base/auth/',this.userinfo).then(res => {
+          //res.data={code:1000,detail:'.....'}
+          if(res.data.code===0){
+
+            //登录成功 写入cookie 写入state
+            //commit一般只能传一个参数 所以如果要同时传name和token就要进行封装
+            // this.$store.commit('login',res.data.data.name,res.data.data.token);
+            this.$store.commit('login',res.data.data);
+
+            //跳转
+            this.$router.push({path:'/'});
+            return
+
+          }
+
+          if (res.data.code===2000){
+            this.validateFormFailed(res.data.detail);
+            return;
+
+          }
+
+          if (res.data.code===1001){
+            this.$message.error(res.data.detail);
+          }else {
+            this.$message.error('网络请求失败');
+          }
+
+        })
+
       });
     },
 
@@ -86,6 +126,19 @@ export default{
 
         }
       })
+    },
+
+    validateFormFailed(errorData){
+      for(let field in errorData){
+        let error = errorData[field][0];
+        this.userinfoError[field]=error;
+      }
+    },
+
+    clearCustomFormError(){
+      for(let key in this.userinfoError){
+        this.userinfoError[key]='';
+      }
     },
 
 
@@ -128,10 +181,10 @@ export default{
 <!--        <el-form label-width="60px" label-position="left">-->
 <!--在 Vue.js 中，:rules 指令用于定义表单验证规则。在你的代码中，:rules="userRules" 将验证规则绑定到 userRules 对象。这些规则用于验证表单项的输入是否符合特定的条件，比如是否为空、格式是否正确等。        -->
         <el-form :model="userinfo" :rules="userRules" ref="userinfo"><!--在 Vue.js 中，:model 指令用于将表单数据绑定到组件的数据对象。在你的代码中，:model="userinfo" 将表单数据绑定到组件的数据对象 userinfo。这意味着对表单输入的任何更改都会自动更新 userinfo 对象 ref-->
-          <el-form-item prop="username" style="margin-top: 26px"><!--prop显示表单验证对应的错误-->
+          <el-form-item prop="username" style="margin-top: 26px" :error="userinfoError.username"><!--prop显示表单验证对应的错误-->
             <el-input v-model="userinfo.username" placeholder="用户名或手机"></el-input>
           </el-form-item>
-          <el-form-item  prop="password">
+          <el-form-item  prop="password" :error="userinfoError.password">
             <el-input v-model="userinfo.password" placeholder="密码" show-password></el-input>
           </el-form-item>
 
